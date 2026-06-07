@@ -416,14 +416,14 @@
         // 打地鼠游戏
         function startMoleGame() {
             moleInterval = setInterval(() => {
-                if (forgiveness >= 100) return;
+                if (forgiveness >= 100 || moleEliminated >= 10) return;
                 
                 // 随机选择一个洞
                 const randomIndex = Math.floor(Math.random() * moleHoles.length);
                 const hole = moleHoles[randomIndex];
                 
                 // 如果这个洞已经有生气表情了，就跳过
-                if (hole.querySelector('.fa-frown-o')) return;
+                if (hole.dataset.active === 'true') return;
                 
                 // 显示生气表情
                 hole.innerHTML = '<i class="fa fa-frown-o text-primary animate-pop"></i>';
@@ -439,26 +439,35 @@
             }, 1000);
         }
 
-        // 打地鼠游戏
         function hitMole(e) {
             const hole = e.currentTarget;
             
+            // 已经完成目标，不再处理
+            if (moleEliminated >= 10) return;
+            
+            // 只有当是生气表情时才计数
             if (hole.dataset.active === 'true') {
                 // 变成开心表情
                 hole.innerHTML = '<i class="fa fa-smile-o text-green-500 animate-pop"></i>';
                 hole.dataset.active = 'false';
                 
-                // 增加计数
+                // 增加计数（最多到10）
                 moleEliminated++;
                 moleCount.textContent = moleEliminated;
                 
                 // 增加原谅度
                 increaseForgiveness(2);
                 
-                // 1秒后恢复
+                // 1秒后恢复中性表情
                 setTimeout(() => {
                     hole.innerHTML = '<i class="fa fa-meh-o text-gray-400"></i>';
                 }, 1000);
+                
+                // 达到目标后停止生成新的地鼠
+                if (moleEliminated >= 10) {
+                    clearInterval(moleInterval);
+                    showToast('✅ 打地鼠完成！');
+                }
             }
         }
 
